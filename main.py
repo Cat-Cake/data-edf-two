@@ -1,38 +1,20 @@
 import json
-
 import requests
 
-url = "https://opendata.edf.fr/data-fair/api/v1/datasets/indisponibilites-des-moyens-de-production-edf-sa/lines"
-
-
-def import_data(page):
-    parameters = {"page": page,
-                  "size": 500}
-    response = requests.get(url, params=parameters)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error: {response.status_code}")
+from download_file import download_data
+from prepare_clean_csv import prepare_clean_csv
+from stats_parc import MRStatsParc, run_stats_parc
 
 
 def main():
-    all_data = []
-    page = 1
+    download_data("edf_data.csv")
+    prepare_clean_csv("edf_data.csv", "edf_clean.csv")
 
-    while True:
-        print("Downloading page", page)
-        data = import_data(page)
+    results = run_stats_parc("edf_clean.csv")
 
-        if data is None or len(data['results']) == 0:
-            break
-
-        all_data.extend(data['results'])
-        page += 1
-    print('Total records', len(all_data))
-
-    with open('edf_records.json', 'w') as outfile:
-        json.dump(all_data, outfile)
+    print("\nRésultat MapReduce :")
+    for key, value in results:
+        print(key, value)
 
 
 if __name__ == "__main__":
