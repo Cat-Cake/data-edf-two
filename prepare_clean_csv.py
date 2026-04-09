@@ -14,7 +14,7 @@ def prepare_clean_csv(input_file="edf_data.csv", output_file="edf_clean.csv"):
             return
 
         # on écrit un fichier simple
-        writer.writerow(["nom", "production"])
+        writer.writerow(["nom", "production", "annee"])
 
         for row in reader:
             if len(row) < 12:
@@ -28,6 +28,7 @@ def prepare_clean_csv(input_file="edf_data.csv", output_file="edf_clean.csv"):
 
             nom = row[3].strip()
             production = row[11].strip().replace(",", ".")
+            date_debut = row[5].strip()
 
             # ignorer les lignes sans puissance disponible
             if not nom or not production:
@@ -41,7 +42,9 @@ def prepare_clean_csv(input_file="edf_data.csv", output_file="edf_clean.csv"):
             if production == 0:
                 continue
 
-            writer.writerow([nom, production])
+            annee = date_debut[:4] if date_debut else ""
+
+            writer.writerow([nom, production, annee])
 
     print(f"Fichier nettoyé créé : {output_file}")
 

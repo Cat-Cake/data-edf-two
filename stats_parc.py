@@ -1,46 +1,55 @@
-from mrjob.job import MRJob
+from collections import defaultdict
 
 
-class MRStatsParc(MRJob):
+def mapper(line):
+    if line.startswith("nom;"):
+        return None
 
-    def mapper(self, _, line):
-        if line.startswith("nom;"):
-            return
+    parts = line.split(";")
+    if len(parts) < 2:
+        return None
 
-        parts = line.split(";")
-        if len(parts) < 2:
-            return
+    try:
+        production = float(parts[1].strip())
+        return "PARC", (production, production, production, 1)
+    except ValueError:
+        return None
 
-        try:
-            production = float(parts[1].strip())
-            yield "PARC", (production, production, production, 1)
-        except ValueError:
-            return
 
-    def reducer(self, key, values):
-        min_val = float("inf")
-        max_val = float("-inf")
-        total = 0.0
-        count = 0
+def reducer(key, values):
+    min_val = float("inf")
+    max_val = float("-inf")
+    total = 0.0
+    count = 0
 
-        for vmin, vmax, vsum, vcount in values:
-            min_val = min(min_val, vmin)
-            max_val = max(max_val, vmax)
-            total += vsum
-            count += vcount
+    for vmin, vmax, vsum, vcount in values:
+        min_val = min(min_val, vmin)
+        max_val = max(max_val, vmax)
+        total += vsum
+        count += vcount
 
-        mean = total / count if count else 0
+    mean = total / count if count else 0
 
-        yield key, {
-            "min": min_val,
-            "max": max_val,
-            "mean": mean
-        }
+    return key, {
+        "min": min_val,
+        "max": max_val,
+        "mean": mean
+    }
 
 
 def run_stats_parc(filename):
-    mr_job = MRStatsParc(args=[filename])
+    # Map
+    mapped = defaultdict(list)
+    with open(filename, encoding="utf-8") as f:
+        for line in f:
+            result = mapper(line.strip())
+            if result is not None:
+                key, value = result
+                mapped[key].append(value)
 
-    with mr_job.make_runner() as runner:
-        runner.run()
-        return list(mr_job.parse_output(runner.cat_output()))
+    # Reduce
+    results = []
+    for key, values in mapped.items():
+        results.append(reducer(key, values))
+
+    return results
