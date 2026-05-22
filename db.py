@@ -137,7 +137,7 @@ def create_tables(conn):
 
 def insert_stats_parc(conn, results):
     with conn.cursor() as cur:
-        # cur.execute("TRUNCATE TABLE stats_parc RESTART IDENTITY;")
+        cur.execute("TRUNCATE TABLE stats_parc RESTART IDENTITY;")
         for _, value in results:
             cur.execute(
                 "INSERT INTO stats_parc (min, max, mean) VALUES (%s, %s, %s);",
@@ -148,7 +148,7 @@ def insert_stats_parc(conn, results):
 
 def insert_stats_centrale(conn, results):
     with conn.cursor() as cur:
-        # cur.execute("TRUNCATE TABLE stats_centrale RESTART IDENTITY;")
+        cur.execute("TRUNCATE TABLE stats_centrale RESTART IDENTITY;")
         for key, value in results:
             cur.execute(
                 "INSERT INTO stats_centrale (centrale, min, max, mean) VALUES (%s, %s, %s, %s);",
@@ -159,7 +159,7 @@ def insert_stats_centrale(conn, results):
 
 def insert_stats_centrale_tranche(conn, results):
     with conn.cursor() as cur:
-        # cur.execute("TRUNCATE TABLE stats_centrale_tranche RESTART IDENTITY;")
+        cur.execute("TRUNCATE TABLE stats_centrale_tranche RESTART IDENTITY;")
         for key, value in results:
             cur.execute(
                 "INSERT INTO stats_centrale_tranche (tranche, min, max, mean) VALUES (%s, %s, %s, %s);",
@@ -170,7 +170,7 @@ def insert_stats_centrale_tranche(conn, results):
 
 def insert_prod_parc_annee(conn, results):
     with conn.cursor() as cur:
-        # cur.execute("TRUNCATE TABLE prod_parc_annee RESTART IDENTITY;")
+        cur.execute("TRUNCATE TABLE prod_parc_annee RESTART IDENTITY;")
         for key, value in results:
             cur.execute(
                 "INSERT INTO prod_parc_annee (annee, total_production) VALUES (%s, %s);",
@@ -181,7 +181,7 @@ def insert_prod_parc_annee(conn, results):
 
 def insert_prod_centrale_annee(conn, results):
     with conn.cursor() as cur:
-        # cur.execute("TRUNCATE TABLE prod_centrale_annee RESTART IDENTITY;")
+        cur.execute("TRUNCATE TABLE prod_centrale_annee RESTART IDENTITY;")
         for _, value in results:
             cur.execute(
                 "INSERT INTO prod_centrale_annee (centrale, annee, total_production) VALUES (%s, %s, %s);",
@@ -192,7 +192,7 @@ def insert_prod_centrale_annee(conn, results):
 
 def insert_indis_parc_annee(conn, results):
     with conn.cursor() as cur:
-        # cur.execute("TRUNCATE TABLE indis_parc_annee RESTART IDENTITY;")
+        cur.execute("TRUNCATE TABLE indis_parc_annee RESTART IDENTITY;")
         for key, value in results:
             cur.execute(
                 "INSERT INTO indis_parc_annee (annee, total_indisponibilite) VALUES (%s, %s);",
@@ -203,7 +203,7 @@ def insert_indis_parc_annee(conn, results):
 
 def insert_indis_prod_zero(conn, results):
     with conn.cursor() as cur:
-        # cur.execute("TRUNCATE TABLE indis_prod_zero RESTART IDENTITY;")
+        cur.execute("TRUNCATE TABLE indis_prod_zero RESTART IDENTITY;")
         for _, value in results:
             cur.execute(
                 "INSERT INTO indis_prod_zero (total_indisponibilite_prod_zero) VALUES (%s);",
@@ -214,7 +214,7 @@ def insert_indis_prod_zero(conn, results):
 
 def insert_indis_prod_sup_zero(conn, results):
     with conn.cursor() as cur:
-        # cur.execute("TRUNCATE TABLE indis_prod_sup_zero RESTART IDENTITY;")
+        cur.execute("TRUNCATE TABLE indis_prod_sup_zero RESTART IDENTITY;")
         for _, value in results:
             cur.execute(
                 "INSERT INTO indis_prod_sup_zero (total_indisponibilite_prod_sup_zero) VALUES (%s);",
@@ -225,9 +225,7 @@ def insert_indis_prod_sup_zero(conn, results):
 
 def insert_meilleure_production(conn, result):
     with conn.cursor() as cur:
-        # cur.execute(
-        #     "TRUNCATE TABLE centrale_meilleur_prod RESTART IDENTITY;"
-        # )
+        cur.execute("TRUNCATE TABLE centrale_meilleur_prod RESTART IDENTITY;")
         sql = """
         INSERT INTO centrale_meilleur_prod (
             annee,
@@ -246,9 +244,7 @@ def insert_meilleure_production(conn, result):
 
 def insert_moins_bonne_production(conn, result):
     with conn.cursor() as cur:
-        # cur.execute(
-        #     "TRUNCATE TABLE centrale_moins_bonne_prod RESTART IDENTITY;"
-        # )
+        cur.execute("TRUNCATE TABLE centrale_moins_bonne_prod RESTART IDENTITY;")
         sql = """
         INSERT INTO centrale_moins_bonne_prod (
             annee,
@@ -267,9 +263,7 @@ def insert_moins_bonne_production(conn, result):
 
 def insert_plus_indisponibilite(conn, result):
     with conn.cursor() as cur:
-        # cur.execute(
-        #     "TRUNCATE TABLE centrale_plus_indisponibilite RESTART IDENTITY;"
-        # )
+        cur.execute("TRUNCATE TABLE centrale_plus_indisponibilite RESTART IDENTITY;")
         sql = """
         INSERT INTO centrale_plus_indisponibilite (
             annee,
@@ -288,9 +282,7 @@ def insert_plus_indisponibilite(conn, result):
 
 def insert_moins_indisponibilite(conn, result):
     with conn.cursor() as cur:
-        # cur.execute(
-        #     "TRUNCATE TABLE centrale_moins_indisponibilite RESTART IDENTITY;"
-        # )
+        cur.execute("TRUNCATE TABLE centrale_moins_indisponibilite RESTART IDENTITY;")
         sql = """
         INSERT INTO centrale_moins_indisponibilite (
             annee,
@@ -309,6 +301,7 @@ def insert_moins_indisponibilite(conn, result):
 
 def insert_taux_indisponibilite_parc(conn, results):
     with conn.cursor() as cur:
+        cur.execute("TRUNCATE TABLE taux_indisponibilite_parc RESTART IDENTITY;")
         sql = """
         INSERT INTO taux_indisponibilite_parc (
             taux
@@ -318,13 +311,14 @@ def insert_taux_indisponibilite_parc(conn, results):
 
         for _, value in results:
             cur.execute(sql, (
-                value["taux"]
+                value["taux"],
             ))
     conn.commit()
 
 
 def insert_taux_indisponibilite_centrale(conn, results):
     with conn.cursor() as cur:
+        cur.execute("TRUNCATE TABLE taux_indisponibilite_centrale RESTART IDENTITY;")
         sql = """
         INSERT INTO taux_indisponibilite_centrale (
             centrale,
@@ -336,13 +330,14 @@ def insert_taux_indisponibilite_centrale(conn, results):
         for centrale, value in results:
             cur.execute(sql, (
                 centrale,
-                value["taux"]
+                value["taux"],
             ))
 
     conn.commit()
 
 def insert_taux_indisponibilite_tranche(conn, results):
     with conn.cursor() as cur:
+        cur.execute("TRUNCATE TABLE taux_indisponibilite_tranche RESTART IDENTITY;")
         sql = """
         INSERT INTO taux_indisponibilite_tranche (
             tranche,
@@ -354,7 +349,7 @@ def insert_taux_indisponibilite_tranche(conn, results):
         for tranche, value in results:
             cur.execute(sql, (
                 tranche,
-                value["taux"]
+                value["taux"],
             ))
 
     conn.commit()
