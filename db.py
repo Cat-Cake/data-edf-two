@@ -112,6 +112,26 @@ def create_tables(conn):
                         indisponibilite FLOAT NOT NULL
                     );
                 """)
+    cur.execute("""
+                    CREATE TABLE IF NOT EXISTS taux_indisponibilite_parc (
+                        id SERIAL PRIMARY KEY,
+                        taux FLOAT NOT NULL
+                    );
+                """)
+    cur.execute("""
+                    CREATE TABLE IF NOT EXISTS taux_indisponibilite_centrale (
+                        id SERIAL PRIMARY KEY,
+                        centrale VARCHAR(255) NOT NULL,
+                        taux FLOAT NOT NULL
+                    );
+                """)
+    cur.execute("""
+                    CREATE TABLE IF NOT EXISTS taux_indisponibilite_tranche (
+                        id SERIAL PRIMARY KEY,
+                        tranche VARCHAR(255) NOT NULL,
+                        taux FLOAT NOT NULL
+                    );
+                """)
     conn.commit()
 
 
@@ -202,6 +222,7 @@ def insert_indis_prod_sup_zero(conn, results):
             )
     conn.commit()
 
+
 def insert_meilleure_production(conn, result):
     with conn.cursor() as cur:
         # cur.execute(
@@ -221,6 +242,7 @@ def insert_meilleure_production(conn, result):
             result["meilleure_production"]["production"]
         ))
     conn.commit()
+
 
 def insert_moins_bonne_production(conn, result):
     with conn.cursor() as cur:
@@ -242,6 +264,7 @@ def insert_moins_bonne_production(conn, result):
         ))
     conn.commit()
 
+
 def insert_plus_indisponibilite(conn, result):
     with conn.cursor() as cur:
         # cur.execute(
@@ -262,6 +285,7 @@ def insert_plus_indisponibilite(conn, result):
         ))
     conn.commit()
 
+
 def insert_moins_indisponibilite(conn, result):
     with conn.cursor() as cur:
         # cur.execute(
@@ -280,4 +304,57 @@ def insert_moins_indisponibilite(conn, result):
             result["moins_indisponibilite"]["centrale"],
             result["moins_indisponibilite"]["indisponibilite"]
         ))
+    conn.commit()
+
+
+def insert_taux_indisponibilite_parc(conn, results):
+    with conn.cursor() as cur:
+        sql = """
+        INSERT INTO taux_indisponibilite_parc (
+            taux
+        )
+        VALUES (%s)
+        """
+
+        for _, value in results:
+            cur.execute(sql, (
+                value["taux"]
+            ))
+    conn.commit()
+
+
+def insert_taux_indisponibilite_centrale(conn, results):
+    with conn.cursor() as cur:
+        sql = """
+        INSERT INTO taux_indisponibilite_centrale (
+            centrale,
+            taux
+        )
+        VALUES (%s, %s)
+        """
+
+        for centrale, value in results:
+            cur.execute(sql, (
+                centrale,
+                value["taux"]
+            ))
+
+    conn.commit()
+
+def insert_taux_indisponibilite_tranche(conn, results):
+    with conn.cursor() as cur:
+        sql = """
+        INSERT INTO taux_indisponibilite_tranche (
+            tranche,
+            taux
+        )
+        VALUES (%s, %s)
+        """
+
+        for tranche, value in results:
+            cur.execute(sql, (
+                tranche,
+                value["taux"]
+            ))
+
     conn.commit()
