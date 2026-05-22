@@ -1,6 +1,9 @@
 from download_file import download_data
 from prepare_clean_csv import prepare_clean_csv
 from stats_centrale import run_stats_centrale
+from stats_centrale_meilleur_prod import run_stats_centrale_meilleur_prod
+from stats_centrale_moins_bonne_prod import run_stats_centrale_moins_bonne_prod
+from stats_centrale_plus_indis_prod import run_stats_centrale_plus_indis_prod
 from stats_centrale_tranche import run_stats_centrale_tranche
 from stats_parc import run_stats_parc
 from stats_prod_centrale_annee import run_prod_centrale_annee
@@ -28,6 +31,10 @@ def main():
     total_indis_parc_annee = run_indis_parc_annee("edf_clean.csv")
     total_indis_prod_zero = run_indis_prod_zero("edf_data.csv")
     total_indis_prod_sup_zero = run_indis_prod_sup_zero("edf_clean.csv")
+    centrale_meilleur_prod = run_stats_centrale_meilleur_prod("edf_clean.csv")
+    centrale_moin_bonne_prod = run_stats_centrale_moins_bonne_prod("edf_clean.csv")
+    centrale_plus_indis_prod = run_stats_centrale_plus_indis_prod("edf_clean.csv")
+    centrale_moins_indis_prod = run_stats_centrale_moins_bonne_prod("edf_clean.csv")
 
     print("\nRésultat ensemble du parc :")
     for key, value in min_max_mean_parc:
@@ -60,6 +67,23 @@ def main():
     print("\nRésultat total d'indisponibilité à production supérieure à zéro :")
     for key, value in total_indis_prod_sup_zero:
         print(key, value)
+
+    print("\nRésultat centrale meilleur production sur l’année :")
+    for key, value in centrale_meilleur_prod:
+        print(key, value)
+
+    print("\nRésultat centrale moins bonne production sur l’année :")
+    for key, value in centrale_moin_bonne_prod:
+        print(key, value)
+
+    print("\nRésultat centrale plus d’indisponibilité sur l’année :")
+    for key, value in centrale_plus_indis_prod:
+        print(key, value)
+
+    print("\nRésultat centrale moins d’indisponibilité sur l’année :")
+    for key, value in centrale_moins_indis_prod:
+        print(key, value)
+
 
     print("\nEnregistrement en base...")
     conn = get_connection()

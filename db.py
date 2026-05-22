@@ -80,12 +80,44 @@ def create_tables(conn):
                 total_indisponibilite_prod_sup_zero FLOAT NOT NULL
             );
         """)
+        cur.execute("""
+                    CREATE TABLE IF NOT EXISTS centrale_meilleur_prod (
+                        id SERIAL PRIMARY KEY,
+                        centrale VARCHAR(255) NOT NULL,
+                        annee VARCHAR(10) NOT NULL,
+                        production FLOAT NOT NULL
+                    );
+                """)
+        cur.execute("""
+                    CREATE TABLE IF NOT EXISTS centrale_moins_bonne_prod (
+                        id SERIAL PRIMARY KEY,
+                        centrale VARCHAR(255) NOT NULL,
+                        annee VARCHAR(10) NOT NULL,
+                        production FLOAT NOT NULL
+                    );
+                """)
+    cur.execute("""
+                    CREATE TABLE IF NOT EXISTS centrale_plus_indisponibilite (
+                        id SERIAL PRIMARY KEY,
+                        centrale VARCHAR(255) NOT NULL,
+                        annee VARCHAR(10) NOT NULL,
+                        indisponibilite FLOAT NOT NULL
+                    );
+                """)
+    cur.execute("""
+                    CREATE TABLE IF NOT EXISTS centrale_moins_indisponibilite (
+                        id SERIAL PRIMARY KEY,
+                        centrale VARCHAR(255) NOT NULL,
+                        annee VARCHAR(10) NOT NULL,
+                        indisponibilite FLOAT NOT NULL
+                    );
+                """)
     conn.commit()
 
 
 def insert_stats_parc(conn, results):
     with conn.cursor() as cur:
-        cur.execute("TRUNCATE TABLE stats_parc RESTART IDENTITY;")
+        # cur.execute("TRUNCATE TABLE stats_parc RESTART IDENTITY;")
         for _, value in results:
             cur.execute(
                 "INSERT INTO stats_parc (min, max, mean) VALUES (%s, %s, %s);",
@@ -96,7 +128,7 @@ def insert_stats_parc(conn, results):
 
 def insert_stats_centrale(conn, results):
     with conn.cursor() as cur:
-        cur.execute("TRUNCATE TABLE stats_centrale RESTART IDENTITY;")
+        # cur.execute("TRUNCATE TABLE stats_centrale RESTART IDENTITY;")
         for key, value in results:
             cur.execute(
                 "INSERT INTO stats_centrale (centrale, min, max, mean) VALUES (%s, %s, %s, %s);",
@@ -107,7 +139,7 @@ def insert_stats_centrale(conn, results):
 
 def insert_stats_centrale_tranche(conn, results):
     with conn.cursor() as cur:
-        cur.execute("TRUNCATE TABLE stats_centrale_tranche RESTART IDENTITY;")
+        # cur.execute("TRUNCATE TABLE stats_centrale_tranche RESTART IDENTITY;")
         for key, value in results:
             cur.execute(
                 "INSERT INTO stats_centrale_tranche (tranche, min, max, mean) VALUES (%s, %s, %s, %s);",
@@ -118,7 +150,7 @@ def insert_stats_centrale_tranche(conn, results):
 
 def insert_prod_parc_annee(conn, results):
     with conn.cursor() as cur:
-        cur.execute("TRUNCATE TABLE prod_parc_annee RESTART IDENTITY;")
+        # cur.execute("TRUNCATE TABLE prod_parc_annee RESTART IDENTITY;")
         for key, value in results:
             cur.execute(
                 "INSERT INTO prod_parc_annee (annee, total_production) VALUES (%s, %s);",
@@ -129,7 +161,7 @@ def insert_prod_parc_annee(conn, results):
 
 def insert_prod_centrale_annee(conn, results):
     with conn.cursor() as cur:
-        cur.execute("TRUNCATE TABLE prod_centrale_annee RESTART IDENTITY;")
+        # cur.execute("TRUNCATE TABLE prod_centrale_annee RESTART IDENTITY;")
         for _, value in results:
             cur.execute(
                 "INSERT INTO prod_centrale_annee (centrale, annee, total_production) VALUES (%s, %s, %s);",
@@ -140,7 +172,7 @@ def insert_prod_centrale_annee(conn, results):
 
 def insert_indis_parc_annee(conn, results):
     with conn.cursor() as cur:
-        cur.execute("TRUNCATE TABLE indis_parc_annee RESTART IDENTITY;")
+        # cur.execute("TRUNCATE TABLE indis_parc_annee RESTART IDENTITY;")
         for key, value in results:
             cur.execute(
                 "INSERT INTO indis_parc_annee (annee, total_indisponibilite) VALUES (%s, %s);",
@@ -151,7 +183,7 @@ def insert_indis_parc_annee(conn, results):
 
 def insert_indis_prod_zero(conn, results):
     with conn.cursor() as cur:
-        cur.execute("TRUNCATE TABLE indis_prod_zero RESTART IDENTITY;")
+        # cur.execute("TRUNCATE TABLE indis_prod_zero RESTART IDENTITY;")
         for _, value in results:
             cur.execute(
                 "INSERT INTO indis_prod_zero (total_indisponibilite_prod_zero) VALUES (%s);",
@@ -162,10 +194,90 @@ def insert_indis_prod_zero(conn, results):
 
 def insert_indis_prod_sup_zero(conn, results):
     with conn.cursor() as cur:
-        cur.execute("TRUNCATE TABLE indis_prod_sup_zero RESTART IDENTITY;")
+        # cur.execute("TRUNCATE TABLE indis_prod_sup_zero RESTART IDENTITY;")
         for _, value in results:
             cur.execute(
                 "INSERT INTO indis_prod_sup_zero (total_indisponibilite_prod_sup_zero) VALUES (%s);",
                 (value["total_indisponibilite_prod_sup_zero"],)
             )
+    conn.commit()
+
+def insert_meilleure_production(conn, result):
+    with conn.cursor() as cur:
+        # cur.execute(
+        #     "TRUNCATE TABLE centrale_meilleur_prod RESTART IDENTITY;"
+        # )
+        sql = """
+        INSERT INTO centrale_meilleur_prod (
+            annee,
+            centrale,
+            production
+        )
+        VALUES (%s, %s, %s)
+        """
+        cur.execute(sql, (
+            result["annee"],
+            result["meilleure_production"]["centrale"],
+            result["meilleure_production"]["production"]
+        ))
+    conn.commit()
+
+def insert_moins_bonne_production(conn, result):
+    with conn.cursor() as cur:
+        # cur.execute(
+        #     "TRUNCATE TABLE centrale_moins_bonne_prod RESTART IDENTITY;"
+        # )
+        sql = """
+        INSERT INTO centrale_moins_bonne_prod (
+            annee,
+            centrale,
+            production
+        )
+        VALUES (%s, %s, %s)
+        """
+        cur.execute(sql, (
+            result["annee"],
+            result["moins_bonne_production"]["centrale"],
+            result["moins_bonne_production"]["production"]
+        ))
+    conn.commit()
+
+def insert_plus_indisponibilite(conn, result):
+    with conn.cursor() as cur:
+        # cur.execute(
+        #     "TRUNCATE TABLE centrale_plus_indisponibilite RESTART IDENTITY;"
+        # )
+        sql = """
+        INSERT INTO centrale_plus_indisponibilite (
+            annee,
+            centrale,
+            indisponibilite
+        )
+        VALUES (%s, %s, %s)
+        """
+        cur.execute(sql, (
+            result["annee"],
+            result["plus_indisponibilite"]["centrale"],
+            result["plus_indisponibilite"]["indisponibilite"]
+        ))
+    conn.commit()
+
+def insert_moins_indisponibilite(conn, result):
+    with conn.cursor() as cur:
+        # cur.execute(
+        #     "TRUNCATE TABLE centrale_moins_indisponibilite RESTART IDENTITY;"
+        # )
+        sql = """
+        INSERT INTO centrale_moins_indisponibilite (
+            annee,
+            centrale,
+            indisponibilite
+        )
+        VALUES (%s, %s, %s)
+        """
+        cur.execute(sql, (
+            result["annee"],
+            result["moins_indisponibilite"]["centrale"],
+            result["moins_indisponibilite"]["indisponibilite"]
+        ))
     conn.commit()
