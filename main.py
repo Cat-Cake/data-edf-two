@@ -1,6 +1,8 @@
-from download_file import download_data, download_centrales
+from download_file import download_data, download_centrales, download_hist
 from load_centrales import load_centrales
 from prepare_clean_csv import prepare_clean_csv
+from prepare_hist_csv import prepare_hist_csv
+from stats_prod_hist_annee import run_prod_hist_annee
 from stats_centrale import run_stats_centrale
 from stats_centrale_meilleur_prod import run_stats_centrale_meilleur_prod
 from stats_centrale_moins_bonne_prod import run_stats_centrale_moins_bonne_prod
@@ -13,6 +15,9 @@ from stats_prod_parc_annee import run_prod_parc_annee
 from stats_indis_parc_annee import run_indis_parc_annee
 from stats_indis_prod_zero import run_indis_prod_zero
 from stats_indis_prod_sup_zero import run_indis_prod_sup_zero
+from stats_nb_indis_parc import run_nb_indis_parc
+from stats_nb_indis_centrale import run_nb_indis_centrale
+from stats_nb_indis_tranche import run_nb_indis_tranche
 from db import (
     get_connection, create_tables,
     insert_stats_parc, insert_stats_centrale, insert_stats_centrale_tranche,
@@ -20,7 +25,8 @@ from db import (
     insert_indis_prod_zero, insert_indis_prod_sup_zero, insert_taux_indisponibilite_parc,
     insert_taux_indisponibilite_centrale, insert_taux_indisponibilite_tranche, insert_meilleure_production,
     insert_moins_bonne_production, insert_plus_indisponibilite, insert_moins_indisponibilite,
-    insert_centrales,
+    insert_centrales, insert_prod_hist_nucleaire,
+    insert_nb_indis_parc, insert_nb_indis_centrale, insert_nb_indis_tranche,
 )
 from taux_indis_centrale import run_taux_indis_centrale
 from taux_indis_parc import run_taux_indis_parc
@@ -30,7 +36,9 @@ from taux_indis_tranche import run_taux_indis_tranche
 def main():
     download_data("edf_data.csv")
     download_centrales("centrales.csv")
+    download_hist("edf_hist.csv")
     prepare_clean_csv("edf_data.csv", "edf_clean.csv")
+    prepare_hist_csv("edf_hist.csv", "edf_hist_clean.csv")
 
     min_max_mean_parc = run_stats_parc("edf_clean.csv")
     min_max_mean_centrale = run_stats_centrale("edf_clean.csv")
@@ -47,6 +55,10 @@ def main():
     taux_indis_centrale = run_taux_indis_centrale("edf_clean.csv")
     taux_indis_parc = run_taux_indis_parc("edf_clean.csv")
     taux_indis_tranche = run_taux_indis_tranche("edf_clean.csv")
+    prod_hist_nucleaire = run_prod_hist_annee("edf_hist_clean.csv")
+    nb_indis_parc = run_nb_indis_parc("edf_data.csv")
+    nb_indis_centrale = run_nb_indis_centrale("edf_data.csv")
+    nb_indis_tranche = run_nb_indis_tranche("edf_data.csv")
 
     print("\nRésultat ensemble du parc :")
     for key, value in min_max_mean_parc:
@@ -108,6 +120,22 @@ def main():
     for key, value in taux_indis_tranche:
         print(key, value)
 
+    print("\nProduction nucléaire historique (GWh) :")
+    for key, value in prod_hist_nucleaire:
+        print(key, value)
+
+    print("\nNombre de périodes d'indisponibilité du parc :")
+    for key, value in nb_indis_parc:
+        print(key, value)
+
+    print("\nNombre de périodes d'indisponibilité par centrale :")
+    for key, value in nb_indis_centrale:
+        print(key, value)
+
+    print("\nNombre de périodes d'indisponibilité par tranche :")
+    for key, value in nb_indis_tranche:
+        print(key, value)
+
 
     centrales = load_centrales("centrales.csv")
 
@@ -130,6 +158,10 @@ def main():
     insert_plus_indisponibilite(conn, centrale_plus_indis_prod)
     insert_moins_indisponibilite(conn, centrale_moins_indis_prod)
     insert_centrales(conn, centrales)
+    insert_prod_hist_nucleaire(conn, prod_hist_nucleaire)
+    insert_nb_indis_parc(conn, nb_indis_parc)
+    insert_nb_indis_centrale(conn, nb_indis_centrale)
+    insert_nb_indis_tranche(conn, nb_indis_tranche)
     conn.close()
     print("Données enregistrées.")
 

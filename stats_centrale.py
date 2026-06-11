@@ -1,4 +1,5 @@
 from collections import defaultdict
+from centrale_names import normalize_centrale
 
 
 def mapper(line):
@@ -12,7 +13,7 @@ def mapper(line):
     try:
         nom = parts[0].strip()
         production = float(parts[1].strip())
-        centrale = nom.rsplit(" ", 1)[0]
+        centrale = normalize_centrale(nom)
         return centrale, (production, production, production, 1)
     except ValueError:
         return None

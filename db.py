@@ -136,6 +136,33 @@ def create_tables(conn):
                         );
                     """)
         cur.execute("""
+            CREATE TABLE IF NOT EXISTS nb_indis_parc (
+                id SERIAL PRIMARY KEY,
+                nb_periodes INT NOT NULL
+            );
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS nb_indis_centrale (
+                id SERIAL PRIMARY KEY,
+                centrale VARCHAR(255) NOT NULL,
+                nb_periodes INT NOT NULL
+            );
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS nb_indis_tranche (
+                id SERIAL PRIMARY KEY,
+                tranche VARCHAR(255) NOT NULL,
+                nb_periodes INT NOT NULL
+            );
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS prod_hist_nucleaire (
+                id SERIAL PRIMARY KEY,
+                annee VARCHAR(10) NOT NULL,
+                production_gwh FLOAT NOT NULL
+            );
+        """)
+        cur.execute("""
             CREATE TABLE IF NOT EXISTS centrales (
                 id SERIAL PRIMARY KEY,
                 tri INT,
@@ -377,6 +404,50 @@ def insert_taux_indisponibilite_tranche(conn, results):
                 value["taux"],
             ))
 
+    conn.commit()
+
+
+def insert_nb_indis_parc(conn, results):
+    with conn.cursor() as cur:
+        cur.execute("TRUNCATE TABLE nb_indis_parc RESTART IDENTITY;")
+        for _, value in results:
+            cur.execute(
+                "INSERT INTO nb_indis_parc (nb_periodes) VALUES (%s);",
+                (value["nb_periodes"],)
+            )
+    conn.commit()
+
+
+def insert_nb_indis_centrale(conn, results):
+    with conn.cursor() as cur:
+        cur.execute("TRUNCATE TABLE nb_indis_centrale RESTART IDENTITY;")
+        for key, value in results:
+            cur.execute(
+                "INSERT INTO nb_indis_centrale (centrale, nb_periodes) VALUES (%s, %s);",
+                (key, value["nb_periodes"])
+            )
+    conn.commit()
+
+
+def insert_nb_indis_tranche(conn, results):
+    with conn.cursor() as cur:
+        cur.execute("TRUNCATE TABLE nb_indis_tranche RESTART IDENTITY;")
+        for key, value in results:
+            cur.execute(
+                "INSERT INTO nb_indis_tranche (tranche, nb_periodes) VALUES (%s, %s);",
+                (key, value["nb_periodes"])
+            )
+    conn.commit()
+
+
+def insert_prod_hist_nucleaire(conn, results):
+    with conn.cursor() as cur:
+        cur.execute("TRUNCATE TABLE prod_hist_nucleaire RESTART IDENTITY;")
+        for key, value in results:
+            cur.execute(
+                "INSERT INTO prod_hist_nucleaire (annee, production_gwh) VALUES (%s, %s);",
+                (key, value["production_gwh"])
+            )
     conn.commit()
 
 

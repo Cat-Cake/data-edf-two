@@ -2,10 +2,10 @@ import csv
 
 
 def prepare_clean_csv(input_file="edf_data.csv", output_file="edf_clean.csv"):
-    with open(input_file, "r", encoding="latin-1", errors="replace", newline="") as infile, \
+    with open(input_file, "r", encoding="utf-8-sig", errors="replace", newline="") as infile, \
          open(output_file, "w", encoding="utf-8", newline="") as outfile:
 
-        reader = csv.reader(infile, delimiter=";", quotechar='"')
+        reader = csv.reader(infile, delimiter=",", quotechar='"')
         writer = csv.writer(outfile, delimiter=";")
 
         header = next(reader, None)
@@ -13,27 +13,28 @@ def prepare_clean_csv(input_file="edf_data.csv", output_file="edf_clean.csv"):
             print("Fichier vide")
             return
 
-        # on écrit un fichier simple
+        # Nouveau format : perimetre_juridique, perimetre_spatial, Status, Identifiant,
+        # Numéro de version, Nom, Filière, Date de publication, Date de début, Date de fin,
+        # Type, Cause, Information complémentaire, Puissance maximale (MW), Puissance disponible (MW)
         writer.writerow(["nom", "production", "annee", "puissance_max"])
 
         for row in reader:
-            if len(row) < 12:
+            if len(row) < 15:
                 continue
 
-            # ignorer les lignes inactives, hors filière nucléaire et les chroniques PMIN
-            if row[0].strip() != "Active":
+            status = row[2].strip()
+            if status not in ("Active", "Inactive"):
                 continue
-            if row[4].strip() != "Nucléaire":
+            if row[6].strip() != "Nucléaire":
                 continue
-            if row[7].strip() == "Chronique PMIN":
+            if row[10].strip() == "Chronique PMIN":
                 continue
 
-            nom = row[3].strip()
-            puissance_max = row[10].strip().replace(",", ".")
-            production = row[11].strip().replace(",", ".")
-            date_debut = row[5].strip()
+            nom = row[5].strip()
+            puissance_max = row[13].strip().replace(",", ".")
+            production = row[14].strip().replace(",", ".")
+            date_debut = row[8].strip()
 
-            # ignorer les lignes sans puissance disponible
             if not nom or not production:
                 continue
 

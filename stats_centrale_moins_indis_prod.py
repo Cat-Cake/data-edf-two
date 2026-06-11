@@ -1,13 +1,5 @@
 from collections import defaultdict
-
-
-def extract_centrale(nom):
-    parts = nom.strip().split()
-
-    if len(parts) > 1 and parts[-1].isdigit():
-        return " ".join(parts[:-1])
-
-    return nom.strip()
+from centrale_names import normalize_centrale
 
 
 def mapper(line, target_year=2026):
@@ -27,7 +19,7 @@ def mapper(line, target_year=2026):
         if annee != target_year:
             return None
 
-        centrale = extract_centrale(nom)
+        centrale = normalize_centrale(nom)
         indisponibilite = puissance_max - production
 
         return centrale, indisponibilite
