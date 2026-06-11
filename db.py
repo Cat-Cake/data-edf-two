@@ -15,10 +15,13 @@ DB_CONFIG = {
 
 
 def get_connection():
-    return psycopg2.connect(**DB_CONFIG)
+    print('Connecting to PostgreSQL...')
+    conn = psycopg2.connect(**DB_CONFIG)
+    return conn
 
 
 def create_tables(conn):
+    print('Creating tables...')
     with conn.cursor() as cur:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS stats_parc (
@@ -96,42 +99,64 @@ def create_tables(conn):
                         production FLOAT NOT NULL
                     );
                 """)
-    cur.execute("""
-                    CREATE TABLE IF NOT EXISTS centrale_plus_indisponibilite (
-                        id SERIAL PRIMARY KEY,
-                        centrale VARCHAR(255) NOT NULL,
-                        annee VARCHAR(10) NOT NULL,
-                        indisponibilite FLOAT NOT NULL
-                    );
-                """)
-    cur.execute("""
-                    CREATE TABLE IF NOT EXISTS centrale_moins_indisponibilite (
-                        id SERIAL PRIMARY KEY,
-                        centrale VARCHAR(255) NOT NULL,
-                        annee VARCHAR(10) NOT NULL,
-                        indisponibilite FLOAT NOT NULL
-                    );
-                """)
-    cur.execute("""
-                    CREATE TABLE IF NOT EXISTS taux_indisponibilite_parc (
-                        id SERIAL PRIMARY KEY,
-                        taux FLOAT NOT NULL
-                    );
-                """)
-    cur.execute("""
-                    CREATE TABLE IF NOT EXISTS taux_indisponibilite_centrale (
-                        id SERIAL PRIMARY KEY,
-                        centrale VARCHAR(255) NOT NULL,
-                        taux FLOAT NOT NULL
-                    );
-                """)
-    cur.execute("""
-                    CREATE TABLE IF NOT EXISTS taux_indisponibilite_tranche (
-                        id SERIAL PRIMARY KEY,
-                        tranche VARCHAR(255) NOT NULL,
-                        taux FLOAT NOT NULL
-                    );
-                """)
+        cur.execute("""
+                        CREATE TABLE IF NOT EXISTS centrale_plus_indisponibilite (
+                            id SERIAL PRIMARY KEY,
+                            centrale VARCHAR(255) NOT NULL,
+                            annee VARCHAR(10) NOT NULL,
+                            indisponibilite FLOAT NOT NULL
+                        );
+                    """)
+        cur.execute("""
+                        CREATE TABLE IF NOT EXISTS centrale_moins_indisponibilite (
+                            id SERIAL PRIMARY KEY,
+                            centrale VARCHAR(255) NOT NULL,
+                            annee VARCHAR(10) NOT NULL,
+                            indisponibilite FLOAT NOT NULL
+                        );
+                    """)
+        cur.execute("""
+                        CREATE TABLE IF NOT EXISTS taux_indisponibilite_parc (
+                            id SERIAL PRIMARY KEY,
+                            taux FLOAT NOT NULL
+                        );
+                    """)
+        cur.execute("""
+                        CREATE TABLE IF NOT EXISTS taux_indisponibilite_centrale (
+                            id SERIAL PRIMARY KEY,
+                            centrale VARCHAR(255) NOT NULL,
+                            taux FLOAT NOT NULL
+                        );
+                    """)
+        cur.execute("""
+                        CREATE TABLE IF NOT EXISTS taux_indisponibilite_tranche (
+                            id SERIAL PRIMARY KEY,
+                            tranche VARCHAR(255) NOT NULL,
+                            taux FLOAT NOT NULL
+                        );
+                    """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS centrales (
+                id SERIAL PRIMARY KEY,
+                tri INT,
+                centrale VARCHAR(255) NOT NULL,
+                tranche VARCHAR(255) NOT NULL,
+                filiere VARCHAR(255),
+                combustible VARCHAR(255),
+                contrat_programme VARCHAR(50),
+                date_mise_en_service DATE,
+                puissance_installee FLOAT,
+                puissance_min FLOAT,
+                unite VARCHAR(20),
+                latitude FLOAT,
+                longitude FLOAT,
+                region VARCHAR(255),
+                departement VARCHAR(255),
+                commune VARCHAR(255),
+                sous_filiere VARCHAR(255),
+                reserve_secondaire_maximale FLOAT
+            );
+        """)
     conn.commit()
 
 
@@ -236,8 +261,8 @@ def insert_meilleure_production(conn, result):
         """
         cur.execute(sql, (
             result["annee"],
-            result["meilleure_production"]["centrale"],
-            result["meilleure_production"]["production"]
+            result["meilleur_production"]["centrale"],
+            result["meilleur_production"]["production"]
         ))
     conn.commit()
 
@@ -352,4 +377,26 @@ def insert_taux_indisponibilite_tranche(conn, results):
                 value["taux"],
             ))
 
+    conn.commit()
+
+
+def insert_centrales(conn, centrales):
+    with conn.cursor() as cur:
+        cur.execute("TRUNCATE TABLE centrales RESTART IDENTITY;")
+        sql = """
+        INSERT INTO centrales (
+            tri, centrale, tranche, filiere, combustible, contrat_programme,
+            date_mise_en_service, puissance_installee, puissance_min, unite,
+            latitude, longitude, region, departement, commune, sous_filiere,
+            reserve_secondaire_maximale
+        ) VALUES (
+            %(tri)s, %(centrale)s, %(tranche)s, %(filiere)s, %(combustible)s,
+            %(contrat_programme)s, %(date_mise_en_service)s, %(puissance_installee)s,
+            %(puissance_min)s, %(unite)s, %(latitude)s, %(longitude)s,
+            %(region)s, %(departement)s, %(commune)s, %(sous_filiere)s,
+            %(reserve_secondaire_maximale)s
+        )
+        """
+        for row in centrales:
+            cur.execute(sql, row)
     conn.commit()

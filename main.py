@@ -1,4 +1,5 @@
-from download_file import download_data
+from download_file import download_data, download_centrales
+from load_centrales import load_centrales
 from prepare_clean_csv import prepare_clean_csv
 from stats_centrale import run_stats_centrale
 from stats_centrale_meilleur_prod import run_stats_centrale_meilleur_prod
@@ -17,7 +18,9 @@ from db import (
     insert_stats_parc, insert_stats_centrale, insert_stats_centrale_tranche,
     insert_prod_parc_annee, insert_prod_centrale_annee, insert_indis_parc_annee,
     insert_indis_prod_zero, insert_indis_prod_sup_zero, insert_taux_indisponibilite_parc,
-    insert_taux_indisponibilite_centrale, insert_taux_indisponibilite_tranche,
+    insert_taux_indisponibilite_centrale, insert_taux_indisponibilite_tranche, insert_meilleure_production,
+    insert_moins_bonne_production, insert_plus_indisponibilite, insert_moins_indisponibilite,
+    insert_centrales,
 )
 from taux_indis_centrale import run_taux_indis_centrale
 from taux_indis_parc import run_taux_indis_parc
@@ -26,6 +29,7 @@ from taux_indis_tranche import run_taux_indis_tranche
 
 def main():
     download_data("edf_data.csv")
+    download_centrales("centrales.csv")
     prepare_clean_csv("edf_data.csv", "edf_clean.csv")
 
     min_max_mean_parc = run_stats_parc("edf_clean.csv")
@@ -77,19 +81,19 @@ def main():
         print(key, value)
 
     print("\nRésultat centrale meilleur production sur l’année :")
-    for key, value in centrale_meilleur_prod:
+    for key, value in centrale_meilleur_prod.items():
         print(key, value)
 
     print("\nRésultat centrale moins bonne production sur l’année :")
-    for key, value in centrale_moin_bonne_prod:
+    for key, value in centrale_moin_bonne_prod.items():
         print(key, value)
 
     print("\nRésultat centrale plus d’indisponibilité sur l’année :")
-    for key, value in centrale_plus_indis_prod:
+    for key, value in centrale_plus_indis_prod.items():
         print(key, value)
 
     print("\nRésultat centrale moins d’indisponibilité sur l’année :")
-    for key, value in centrale_moins_indis_prod:
+    for key, value in centrale_moins_indis_prod.items():
         print(key, value)
 
     print("\nRésultat taux d'indisponibilite du parc :")
@@ -105,6 +109,8 @@ def main():
         print(key, value)
 
 
+    centrales = load_centrales("centrales.csv")
+
     print("\nEnregistrement en base...")
     conn = get_connection()
     create_tables(conn)
@@ -119,6 +125,11 @@ def main():
     insert_taux_indisponibilite_parc(conn, taux_indis_parc)
     insert_taux_indisponibilite_centrale(conn, taux_indis_centrale)
     insert_taux_indisponibilite_tranche(conn, taux_indis_tranche)
+    insert_meilleure_production(conn, centrale_meilleur_prod)
+    insert_moins_bonne_production(conn, centrale_moin_bonne_prod)
+    insert_plus_indisponibilite(conn, centrale_plus_indis_prod)
+    insert_moins_indisponibilite(conn, centrale_moins_indis_prod)
+    insert_centrales(conn, centrales)
     conn.close()
     print("Données enregistrées.")
 

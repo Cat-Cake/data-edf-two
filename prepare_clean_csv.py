@@ -20,8 +20,10 @@ def prepare_clean_csv(input_file="edf_data.csv", output_file="edf_clean.csv"):
             if len(row) < 12:
                 continue
 
-            # ignorer les lignes inactives et les chroniques PMIN
+            # ignorer les lignes inactives, hors filière nucléaire et les chroniques PMIN
             if row[0].strip() != "Active":
+                continue
+            if row[4].strip() != "Nucléaire":
                 continue
             if row[7].strip() == "Chronique PMIN":
                 continue
